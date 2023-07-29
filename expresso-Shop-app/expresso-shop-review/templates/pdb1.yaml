@@ -1,0 +1,10 @@
+apiVersion: policy/v1beta1
+kind: PodDisruptionBudget
+metadata:
+  name: {{ .Values.name }}-v2
+spec:
+  minAvailable: {{ .Values.PodDisruptionBudget }} # Minimum number of pods that must be available
+  selector:
+    matchLabels:
+       app: {{ .Values.labels.app }}-v2
+       version: {{ .Values.labels.version2 }}

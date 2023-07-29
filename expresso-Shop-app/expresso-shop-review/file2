@@ -1,0 +1,244 @@
+---
+# Source: expresso-shop-review/templates/pdb.yaml
+apiVersion: policy/v1beta1
+kind: PodDisruptionBudget
+metadata:
+  name: expresso-shop-review-v1
+spec:
+  minAvailable: 2 # Minimum number of pods that must be available
+  selector:
+    matchLabels:
+       app: expresso-shop-review-v1
+       version: v1  # Label selector that matches the pods to be protected
+---
+# Source: expresso-shop-review/templates/pdb1.yaml
+apiVersion: policy/v1beta1
+kind: PodDisruptionBudget
+metadata:
+  name: expresso-shop-review-v2
+spec:
+  minAvailable: 2 # Minimum number of pods that must be available
+  selector:
+    matchLabels:
+       app: expresso-shop-review-v2
+       version: v2
+---
+# Source: expresso-shop-review/templates/serviceaccount.yaml
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: expresso-shop-review-v1
+  labels:
+   app: expresso-shop-review-v1
+   version: v1
+---
+# Source: expresso-shop-review/templates/serviceaccount1.yaml
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: expresso-shop-review-v2
+  labels:
+   app: expresso-shop-review-v2
+   version: v2
+---
+# Source: expresso-shop-review/templates/service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: expresso-shop-review
+  labels:
+      app: expresso-shop-review-v1
+      version: v1
+      app: expresso-shop-review-v2
+      version: v2
+spec:
+  type: NodePort
+  ports:
+    - port: 8092
+      targetPort: 80
+      protocol: TCP
+      name: http
+  selector:
+     app: expresso-shop-review-v1
+     version: v1
+     app: expresso-shop-review-v2
+     version: v2
+---
+# Source: expresso-shop-review/templates/deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: expresso-shop-review-v1
+  labels:
+    app: expresso-shop-review-v1
+    version: v1
+spec:
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 2
+      maxSurge: 2
+  selector:
+    matchLabels:
+      app: expresso-shop-review-v1
+      version: v1
+  template:
+    metadata:
+      labels:
+        app: expresso-shop-review-v1
+        version: v1
+    spec:
+      serviceAccountName: expresso-shop-review
+      securityContext:
+        {}
+      containers:
+        - name: expresso-shop-review
+          securityContext:
+            {}
+          image: "devopseasylearning2021/s3-project01-espresso-shop-review:v1.0.0"
+          env:
+            - name: SERVICE_VERSION
+              value: v1
+          imagePullPolicy: 
+          ports:
+            - name: http
+              containerPort: 80
+              protocol: TCP
+          # livenessProbe:
+          #   httpGet:
+          #     path: /
+          #     port: http
+          # readinessProbe:
+          #   httpGet:
+          #     path: /
+          #     port: http
+          resources:
+            limits:
+              cpu: 100m
+              memory: 128Mi
+            requests:
+              cpu: 100m
+              memory: 128Mi
+---
+# Source: expresso-shop-review/templates/deployment1.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: expresso-shop-review-v2
+  labels:
+    app: expresso-shop-review-v2
+    version: v2
+spec:
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 2
+      maxSurge: 2
+  selector:
+    matchLabels:
+      app: expresso-shop-review-v2
+      version: v2
+  template:
+    metadata:
+      labels:
+        app: expresso-shop-review-v2
+        version: v2
+    spec:
+      serviceAccountName: expresso-shop-review
+      securityContext:
+        {}
+      containers:
+        - name: expresso-shop-review
+          securityContext:
+            {}
+          image: "devopseasylearning2021/s3-project01-espresso-shop-review:v1.0.0"
+          env:
+            - name: SERVICE_VERSION
+              value: v2
+          imagePullPolicy: 
+          ports:
+            - name: http
+              containerPort: 80
+              protocol: TCP
+          # livenessProbe:
+          #   httpGet:
+          #     path: /
+          #     port: http
+          # readinessProbe:
+          #   httpGet:
+          #     path: /
+          #     port: http
+          resources:
+            limits:
+              cpu: 100m
+              memory: 128Mi
+            requests:
+              cpu: 100m
+              memory: 128Mi
+---
+# Source: expresso-shop-review/templates/hpa.yaml
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: expresso-shop-review-v1
+  labels:
+     app: expresso-shop-review-v1
+     version: v1
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: expresso-shop-review-v1
+  minReplicas: 1
+  maxReplicas: 4
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 80
+---
+# Source: expresso-shop-review/templates/hpa1.yaml
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: expresso-shop-review-v2
+  labels:
+     app: expresso-shop-review-v2
+     version: v2
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: expresso-shop-review-v2
+  minReplicas: 1
+  maxReplicas: 4
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 80
+---
+# Source: expresso-shop-review/templates/tests/test-connection.yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: "release-name-expresso-shop-review-test-connection"
+  labels:
+    helm.sh/chart: expresso-shop-review-0.1.0
+    app.kubernetes.io/name: expresso-shop-review
+    app.kubernetes.io/instance: release-name
+    app.kubernetes.io/version: "1.16.0"
+    app.kubernetes.io/managed-by: Helm
+  annotations:
+    "helm.sh/hook": test
+spec:
+  containers:
+    - name: wget
+      image: busybox
+      command: ['wget']
+      args: ['release-name-expresso-shop-review:8092']
+  restartPolicy: Never
