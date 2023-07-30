@@ -99,4 +99,9 @@ strategy:  # Rolling update strategy is added here
     
 PodDisruptionBudget: 2
 
+postgres:
+  username: "postgres"
+  password: "TlhZJmdlcCNTWG4qNnJ1VkpMdldkekRyIVZhV3hNKkJF"
+  database: "espresso" 
+
 

@@ -102,7 +102,9 @@ strategy:  # Rolling update strategy is added here
     
 PodDisruptionBudget: 2
 
-
+redis: 
+   authKey: "VjU/NSZ9NTl3ZTU6XUs7eg=="
+   password: "LChdOFk5JXFMWz1XZkxdPQ=="
 
 
 

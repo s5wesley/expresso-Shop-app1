@@ -40,6 +40,9 @@ spec:
           securityContext:
             {{- toYaml .Values.securityContext | nindent 12 }}
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          envFrom:
+          - secretRef:
+              name: {{ .Values.name }} 
           env:
             {{- toYaml .Values.connection1 | nindent 12 }}
           imagePullPolicy: {{ .Values.image.pullPolicy }}

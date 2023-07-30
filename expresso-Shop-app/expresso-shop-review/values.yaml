@@ -109,5 +109,11 @@ connection2:
       value: "v2"
 
 
+postgres:
+  username: "postgres"
+  password: "fjQpRWVTRH59KixLdjl9Qg=="
+  database: "espresso"      
+
+
 
 

@@ -41,6 +41,17 @@ metadata:
    app: expresso-shop-review-v2
    version: v2
 ---
+# Source: expresso-shop-review/templates/secret.yaml
+apiVersion: v1
+kind: Secret
+metadata:
+  name: expresso-shop-review
+type: Opaque
+data:
+  username: postgres
+  password: fjQpRWVTRH59KixLdjl9Qg==
+  database: espresso
+---
 # Source: expresso-shop-review/templates/service.yaml
 apiVersion: v1
 kind: Service
@@ -96,6 +107,9 @@ spec:
           securityContext:
             {}
           image: "devopseasylearning2021/s3-project01-espresso-shop-review:v1.0.0"
+          envFrom:
+          - secretRef:
+              name: expresso-shop-review 
           env:
             - name: SERVICE_VERSION
               value: v1
@@ -152,6 +166,9 @@ spec:
           securityContext:
             {}
           image: "devopseasylearning2021/s3-project01-espresso-shop-review:v1.0.0"
+          envFrom:
+          - secretRef:
+              name:  
           env:
             - name: SERVICE_VERSION
               value: v2

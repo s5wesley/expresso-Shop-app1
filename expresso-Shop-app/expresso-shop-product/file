@@ -20,6 +20,17 @@ metadata:
     app: expresso-shop-product
     version: v1
 ---
+# Source: expresso-shop-product/templates/secret.yaml
+apiVersion: v1
+kind: Secret
+metadata:
+  name: expresso-shop-product
+type: Opaque
+data:
+  username: postgres
+  password: TlhZJmdlcCNTWG4qNnJ1VkpMdldkekRyIVZhV3hNKkJF
+  database: espresso
+---
 # Source: expresso-shop-product/templates/service.yaml
 apiVersion: v1
 kind: Service
@@ -71,6 +82,9 @@ spec:
           securityContext:
             {}
           image: "devopseasylearning2021/s3-project01-espresso-shop-product:v1.0.0"
+          envFrom:
+          - secretRef:
+              name: expresso-shop-product
           imagePullPolicy: 
           ports:
             - name: http

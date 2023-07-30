@@ -1,0 +1,147 @@
+---
+# Source: expresso-shop-web/templates/pdb.yaml
+apiVersion: policy/v1beta1
+kind: PodDisruptionBudget
+metadata:
+  name: expresso-shop-web
+spec:
+  minAvailable: 2 # Minimum number of pods that must be available
+  selector:
+    matchLabels:
+      app: expresso-shop-web  # Label selector that matches the pods to be protected
+---
+# Source: expresso-shop-web/templates/serviceaccount.yaml
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: expresso-shop-web
+  labels:
+    app: expresso-shop-web
+---
+# Source: expresso-shop-web/templates/secret.yaml
+apiVersion: v1
+kind: Secret
+metadata:
+  name: expresso-shop-web
+type: Opaque
+data:
+  authKey: VjU/NSZ9NTl3ZTU6XUs7eg==
+  password: LChdOFk5JXFMWz1XZkxdPQ==
+---
+# Source: expresso-shop-web/templates/service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: expresso-shop-web
+  labels:
+     app: expresso-shop-web
+spec:
+  type: NodePort
+  ports:
+    - port: 8090
+      targetPort: 80
+      protocol: TCP
+      name: http
+  selector:
+   app: expresso-shop-web
+---
+# Source: expresso-shop-web/templates/deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: expresso-shop-web
+  labels:
+    app: expresso-shop-web
+spec:
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 2
+      maxSurge: 2
+  selector:
+    matchLabels:
+      app: expresso-shop-web
+  template:
+    metadata:
+      labels:
+        app: expresso-shop-web
+    spec:
+      serviceAccountName: expresso-shop-web
+      securityContext:
+        {}
+      containers:
+        - name: expresso-shop-web
+          securityContext:
+            {}
+          image: "devopseasylearning2021/s3-project01-espresso-shop:v1.0.0"
+          envFrom:
+          - secretRef:
+              name: expresso-shop-web
+          connection:
+            productionname: ProductCatalogUrl
+            productionvalue: http://espresso-shop-product-catalog-svc:8091
+            reviewname: ReviewsUrl
+            reviewvalue: http://espresso-shop-reviews-svc:8092  # Corrected the indentation here
+          imagePullPolicy: 
+          ports:
+            - name: http
+              containerPort: 80
+              protocol: TCP
+          # livenessProbe:
+          #   httpGet:
+          #     path: /
+          #     port: http
+          # readinessProbe:
+          #   httpGet:
+          #     path: /
+          #     port: http
+          resources:
+            limits:
+              cpu: 100m
+              memory: 128Mi
+            requests:
+              cpu: 100m
+              memory: 128Mi
+---
+# Source: expresso-shop-web/templates/hpa.yaml
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: expresso-shop-web
+  labels:
+     app: expresso-shop-web
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: expresso-shop-web
+  minReplicas: 1
+  maxReplicas: 4
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 80
+---
+# Source: expresso-shop-web/templates/tests/test-connection.yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: "release-name-expresso-shop-web-test-connection"
+  labels:
+    helm.sh/chart: expresso-shop-web-0.1.0
+    app.kubernetes.io/name: expresso-shop-web
+    app.kubernetes.io/instance: release-name
+    app.kubernetes.io/version: "1.16.0"
+    app.kubernetes.io/managed-by: Helm
+  annotations:
+    "helm.sh/hook": test
+spec:
+  containers:
+    - name: wget
+      image: busybox
+      command: ['wget']
+      args: ['release-name-expresso-shop-web:8090']
+  restartPolicy: Never
