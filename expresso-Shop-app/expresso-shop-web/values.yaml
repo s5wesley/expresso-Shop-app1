@@ -5,7 +5,7 @@
 replicaCount: 2
 
 image:
-  repository: devopseasylearning2021/s3-project01-espresso-shop
+  repository: hossambarakat/espresso-shop-web
   connection:  # New environment variables added here
     productionname: ProductCatalogUrl
     productionvalue: "http://espresso-shop-product-catalog-svc:8091"
@@ -13,7 +13,7 @@ image:
     reviewvalue: "http://espresso-shop-reviews-svc:8092"
   imagePullPolicy: IfNotPresent
   # Overrides the image tag whose default is the chart appVersion.
-  tag: "v1.0.0"
+  tag: "latest"
 
 imagePullSecrets: []
 nameOverride: ""

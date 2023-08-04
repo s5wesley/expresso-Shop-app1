@@ -5,10 +5,10 @@
 replicaCount: 2
 
 image:
-  repository: devopseasylearning2021/s3-project01-espresso-shop-review
+  repository: hossambarakat/espresso-shop-reviews
   imagePullPolicy: IfNotPresent
   # Overrides the image tag whose default is the chart appVersion.
-  tag: "v1.0.0"
+  tag: "latest"
 
 imagePullSecrets: []
 nameOverride: ""
